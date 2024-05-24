@@ -60,7 +60,9 @@ const Dashboard = ({ route }) => {
               <Text style={styles.cageName}>nom du cage :{cage.nom}</Text>
               <Text style={styles.cageName}>Id :{cage.Idcage}</Text>
               <Text style={styles.cageDescription}>description: {cage.description}</Text>
-              {/* Add more properties as needed */}
+              <Text style={[styles.statusText, cage.status === 1 ? styles.greenText : styles.redText]}>
+                Cage is {cage.status === 1 ? 'Protected' : 'Breached'}
+              </Text>
             </View>
           ))}
         </View>
@@ -129,11 +131,35 @@ const styles = StyleSheet.create({
   cageDescription: {
     fontSize: 16,
   },
+  statusText: {
+    fontSize: 16,
+  },
+  greenText: {
+    backgroundColor:'green',
+    color: 'white',
+    fontSize:20,
+    textAlign:'center',
+    marginTop:20,
+    padding:8,
+    borderWidth:1,
+    borderColor:'green',
+  },
+  redText: {
+    backgroundColor:'red',
+    color: 'white',
+    fontSize:20,
+    textAlign:'center',
+    marginTop:20,
+    padding:8,
+    borderWidth:1,
+    borderColor:'red',
+  },
   mapContainer: {
     flex: 1,
     borderRadius: 8,
     overflow: 'hidden',
     marginBottom: 8,
+  
   },
   map: {
     flex: 1,
