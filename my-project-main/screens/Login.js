@@ -13,7 +13,7 @@ const Login = ({ navigation }) => {
   useEffect(() => {
     Animated.timing(logoOpacity, {
       toValue: 1, // Final opacity value
-      duration: 2000, // Duration of the animation in milliseconds
+      duration: 1000, // Duration of the animation in milliseconds
       useNativeDriver: true,
     }).start();
   }, []);
