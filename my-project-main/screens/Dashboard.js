@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
-import MapView, { Marker } from 'react-native-maps'; // Import MapView and Marker from react-native-maps
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Image } from 'react-native';
+import MapView, { Marker } from 'react-native-maps';
 import axios from 'axios';
 
 const Dashboard = ({ route }) => {
   const { username } = route.params;
   const [cages, setCages] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showMap, setShowMap] = useState(false); // State to control the visibility of the map
-  const [initialRegion, setInitialRegion] = useState(null); // State to store the initial region of the map
+  const [showMap, setShowMap] = useState(false);
+  const [initialRegion, setInitialRegion] = useState(null);
+  const [clientData, setClientData] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -18,15 +19,13 @@ const Dashboard = ({ route }) => {
         setCages(data);
         setLoading(false);
 
-        // Calculate the average latitude and longitude of all the cages
         const avgLatitude = data.reduce((acc, cage) => acc + parseFloat(cage.latitude_centre), 0) / data.length;
         const avgLongitude = data.reduce((acc, cage) => acc + parseFloat(cage.longitude_centre), 0) / data.length;
 
-        // Set the initial region to the average latitude and longitude
         setInitialRegion({
           latitude: avgLatitude,
           longitude: avgLongitude,
-          latitudeDelta: 0.1, // Adjust the zoom level as needed
+          latitudeDelta: 0.1,
           longitudeDelta: 0.1,
         });
       } catch (error) {
@@ -37,7 +36,20 @@ const Dashboard = ({ route }) => {
     fetchData();
   }, []);
 
-  if (loading) {
+  useEffect(() => {
+    const fetchClientData = async () => {
+      try {
+        const response = await axios.get('http://127.0.0.1:8000/api/client/');
+        setClientData(response.data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchClientData();
+  }, []);
+
+  if (loading || !clientData) {
     return (
       <View style={styles.loader}>
         <ActivityIndicator size="large" color="#0000ff" />
@@ -46,12 +58,12 @@ const Dashboard = ({ route }) => {
   }
 
   const handleCageContainerPress = () => {
-    setShowMap(!showMap); // Toggle the visibility of the map
+    setShowMap(!showMap);
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Welcome, {username}!</Text>
+      <Text style={styles.topRight}>Welcome, "{username}" !</Text>
       <Text style={styles.subtitle}>This is your List of Cages</Text>
       <TouchableOpacity onPress={handleCageContainerPress}>
         <View style={styles.cageContainer}>
@@ -71,7 +83,7 @@ const Dashboard = ({ route }) => {
         <View style={styles.mapContainer}>
           <MapView
             style={styles.map}
-            initialRegion={initialRegion} // Set the initial region of the map
+            initialRegion={initialRegion}
           >
             {cages.map(cage => (
               <Marker
@@ -85,6 +97,12 @@ const Dashboard = ({ route }) => {
               />
             ))}
           </MapView>
+        </View>
+      )}
+      {clientData && (
+        <View style={styles.topRight}>
+          <Text style={styles.clientPseudo}>{clientData.pseudo}</Text>
+          <Image source={{ uri: clientData.picture }} style={styles.clientPicture} />
         </View>
       )}
     </View>
@@ -109,12 +127,13 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 20,
-    marginBottom: 8,
+    marginTop: 38,
+    marginBottom:-20,
     textAlign: 'center',
     color: 'white',
   },
   cageContainer: {
-    marginTop: 8,
+    marginTop: 40,
   },
   cageItem: {
     backgroundColor: '#fff',
@@ -146,7 +165,7 @@ const styles = StyleSheet.create({
   },
   redText: {
     backgroundColor:'red',
-    color: 'white',
+    color:'white',
     fontSize:20,
     textAlign:'center',
     marginTop:20,
@@ -155,7 +174,7 @@ const styles = StyleSheet.create({
     borderColor:'red',
   },
   mapContainer: {
-    flex: 1,
+    height: 200,
     borderRadius: 8,
     overflow: 'hidden',
     marginBottom: 8,
@@ -163,6 +182,25 @@ const styles = StyleSheet.create({
   },
   map: {
     flex: 1,
+  },
+  topRight: {
+    position: 'absolute',
+    color:'#052206',
+    fontSize:18,
+    top: 0,
+    right: 0,
+    padding: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  clientPseudo: {
+    fontSize: 16,
+    marginRight: 10,
+  },
+  clientPicture: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
   },
 });
 
